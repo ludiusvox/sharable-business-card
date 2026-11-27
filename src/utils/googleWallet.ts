@@ -1,5 +1,6 @@
 import { BroadcastRules, CardProfile } from '../types/card';
 import { buildShareLink, buildVCardPayload } from './vcard';
+import { Browser } from '@capacitor/browser';
 
 export interface GoogleWalletPassObject {
   id: string;
@@ -204,17 +205,46 @@ export async function openGoogleWalletPass(
 
   if (saveUrl || jwt) {
     const targetUrl = saveUrl || `https://pay.google.com/gp/v/save/${jwt}`;
-    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    try {
+      await Browser.open({ url: targetUrl });
+    } catch {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    }
     if (onNotify) onNotify('Opening Google Wallet save gateway...');
     return { success: true, mode: 'jwt_redirect' };
   }
 
-  // If no signed JWT is configured in environment, export the pass JSON payload to prevent 404 error
-  downloadGoogleWalletPassJson(profile, rules);
-  if (onNotify) {
-    onNotify(
-      'Exported Google Wallet Pass JSON! Scan the pass QR code or import JSON into Google Pay & Wallet Console.'
-    );
+  // If no signed JWT is configured in environment, generate an unsigned JWT to allow the user to add it to Wallet
+  const passData = buildGoogleWalletPassPayload(profile, rules);
+
+  const encodeBase64Url = (str: string) => {
+    const utf8Bytes = new TextEncoder().encode(str);
+    let binaryString = '';
+    for (let i = 0; i < utf8Bytes.length; i++) {
+      binaryString += String.fromCharCode(utf8Bytes[i]);
+    }
+    return btoa(binaryString)
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_');
+  };
+
+  const header = { alg: 'none', typ: 'JWT' };
+  const encodedHeader = encodeBase64Url(JSON.stringify(header));
+  const encodedPayload = encodeBase64Url(JSON.stringify(passData));
+
+  const unsignedJwt = `${encodedHeader}.${encodedPayload}.`;
+  const targetUrl = `https://pay.google.com/gp/v/save/${unsignedJwt}`;
+
+  try {
+    await Browser.open({ url: targetUrl });
+  } catch {
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
   }
-  return { success: true, mode: 'download_json' };
+
+  if (onNotify) {
+    onNotify('Opening Google Wallet...');
+  }
+
+  return { success: true, mode: 'jwt_redirect' };
 }
