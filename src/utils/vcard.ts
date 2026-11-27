@@ -86,6 +86,53 @@ export function downloadVCard(
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Shares vCard (.vcf) file via Android Nearby Share / System Share sheet if supported.
+ */
+export async function shareVCard(
+  profile: CardProfile,
+  redactedFields: RedactableField[] = [],
+  includeCompany = true
+): Promise<boolean> {
+  const vcard = buildVCardPayload(profile, redactedFields, includeCompany);
+  const safeName = (profile.fullName || 'sovereign-id')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+  const file = new File([blob], `${safeName || 'sovereign-id'}.vcf`, { type: 'text/vcard' });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: `${profile.fullName} — Digital Business Card vCard`,
+        text: `Digital business card vCard (.vcf) for ${profile.fullName}`,
+        files: [file],
+      });
+      return true;
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        downloadVCard(profile, redactedFields, includeCompany);
+      }
+      return false;
+    }
+  } else if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `${profile.fullName} — Digital Business Card`,
+        text: buildShareLink(profile),
+        url: buildShareLink(profile),
+      });
+      return true;
+    } catch {
+      // ignore
+    }
+  }
+
+  downloadVCard(profile, redactedFields, includeCompany);
+  return false;
+}
+
 export function buildShareLink(profile: CardProfile): string {
   if (typeof window === 'undefined') return 'https://sovereign.id/pass';
   const url = new URL(window.location.href);

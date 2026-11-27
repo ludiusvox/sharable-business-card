@@ -24,6 +24,7 @@ import {
   buildShareLink,
   copyText,
   downloadVCard,
+  shareVCard,
 } from './utils/vcard';
 
 const STORAGE_KEYS = {
@@ -140,9 +141,13 @@ export default function App() {
     notify(ok ? 'Shareable digital card link copied' : 'Unable to copy link');
   };
 
-  const handleDownloadVCard = () => {
-    downloadVCard(profile, rules.redactedFields, rules.includeCompanyInWallet);
-    notify(`Downloaded ${profile.fullName || 'sovereign-id'} vCard (.vcf)`);
+  const handleDownloadVCard = async () => {
+    const shared = await shareVCard(profile, rules.redactedFields, rules.includeCompanyInWallet);
+    if (shared) {
+      notify(`Shared ${profile.fullName || 'sovereign-id'} vCard via Nearby Share`);
+    } else {
+      notify(`Downloaded ${profile.fullName || 'sovereign-id'} vCard (.vcf)`);
+    }
   };
 
   const handleSyncWallet = useCallback(() => {
