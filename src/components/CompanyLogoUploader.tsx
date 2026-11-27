@@ -80,7 +80,7 @@ export const CompanyLogoUploader: React.FC<CompanyLogoUploaderProps> = ({
             </span>
             <span className="text-xs text-on-surface-variant truncate">
               {logo
-                ? 'Displayed on your 3D card & Wallet pass'
+                ? 'Displayed on your 3D card & digital pass'
                 : 'Drag and drop or choose an image file'}
             </span>
           </div>

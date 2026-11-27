@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
-import { BroadcastRules, CardProfile, WalletSyncState } from '../types/card';
+import { BroadcastRules, CardProfile } from '../types/card';
 import { isCompanyConfigured } from '../utils/vcard';
 import { InteractiveCard3D } from './InteractiveCard3D';
 
 interface ShareTabProps {
   profile: CardProfile;
   rules: BroadcastRules;
-  walletState: WalletSyncState;
   onEditCard: () => void;
   onOpenShareSheet: () => void;
   onOpenNfcBeam: () => void;
-  onSyncWallet: () => void;
-  onOpenWalletModal: () => void;
   onCopyText: (text: string, label: string) => void;
   onDownloadVCard: () => void;
 }
@@ -19,12 +16,9 @@ interface ShareTabProps {
 export const ShareTab: React.FC<ShareTabProps> = ({
   profile,
   rules,
-  walletState,
   onEditCard,
   onOpenShareSheet,
   onOpenNfcBeam,
-  onSyncWallet,
-  onOpenWalletModal,
   onCopyText,
   onDownloadVCard,
 }) => {
@@ -38,28 +32,6 @@ export const ShareTab: React.FC<ShareTabProps> = ({
       onOpenNfcBeam();
     }, 450);
   };
-
-  const handleWalletClick = () => {
-    onOpenWalletModal();
-  };
-
-  const walletStatusLabel =
-    walletState.status === 'syncing'
-      ? 'Syncing...'
-      : walletState.status === 'linked'
-      ? 'Pass Linked'
-      : walletState.status === 'removed'
-      ? 'Re-Link Pass'
-      : 'Ready to Sync';
-
-  const walletStatusColor =
-    walletState.status === 'syncing'
-      ? 'text-secondary'
-      : walletState.status === 'linked'
-      ? 'text-emerald-400'
-      : walletState.status === 'removed'
-      ? 'text-error'
-      : 'text-primary';
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,13 +60,13 @@ export const ShareTab: React.FC<ShareTabProps> = ({
           <InteractiveCard3D
             profile={profile}
             redactedFields={rules.redactedFields}
-            includeCompany={rules.includeCompanyInWallet}
+            includeCompany={true}
             onEditCard={onEditCard}
             onCopyVCard={() => onDownloadVCard()}
           />
 
           {/* Quick desktop info strip under card */}
-          <div className="hidden lg:grid grid-cols-3 gap-3">
+          <div className="hidden lg:grid grid-cols-2 gap-3">
             <div className="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-outline">
                 Pass Serial
@@ -109,14 +81,6 @@ export const ShareTab: React.FC<ShareTabProps> = ({
               </span>
               <span className="text-sm font-semibold text-on-surface">
                 {rules.quickShareVcard ? 'vCard 4.0 + Link' : 'Direct URL Only'}
-              </span>
-            </div>
-            <div className="bg-surface-container-low rounded-xl p-3.5 flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-outline">
-                Wallet Sync
-              </span>
-              <span className={`text-sm font-semibold ${walletStatusColor}`}>
-                {walletStatusLabel}
               </span>
             </div>
           </div>
@@ -204,51 +168,6 @@ export const ShareTab: React.FC<ShareTabProps> = ({
                 send_to_mobile
               </span>
             </button>
-
-            {/* Google Wallet Branded Integration Button */}
-            <div className="flex items-center justify-between gap-2 bg-black rounded-xl p-2 shadow-md border border-white/10">
-              <button
-                type="button"
-                onClick={handleWalletClick}
-                className="flex-1 min-h-[44px] flex items-center gap-3 py-1.5 px-2.5 hover:opacity-90 active:scale-[0.99] transition-transform text-left min-w-0"
-              >
-                <div className="w-9 h-9 rounded-lg bg-surface-container-high/60 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
-                    <path
-                      d="M19.5 8.5H4.5C3.39543 8.5 2.5 9.39543 2.5 10.5V17.5C2.5 18.6046 3.39543 19.5 4.5 19.5H19.5C20.6046 19.5 21.5 18.6046 21.5 17.5V10.5C21.5 9.39543 20.6046 8.5 19.5 8.5Z"
-                      fill="#34A853"
-                    />
-                    <path
-                      d="M4.5 4.5H19.5C20.6046 4.5 21.5 5.39543 21.5 6.5V8.5H2.5V6.5C2.5 5.39543 3.39543 4.5 4.5 4.5Z"
-                      fill="#4285F4"
-                    />
-                    <path
-                      d="M17.5 15C18.0523 15 18.5 14.5523 18.5 14C18.5 13.4477 18.0523 13 17.5 13C16.9477 13 16.5 13.4477 16.5 14C16.5 14.5523 16.9477 15 17.5 15Z"
-                      fill="#FBBC05"
-                    />
-                    <path d="M2.5 11.5H21.5V13.5H2.5V11.5Z" fill="#EA4335" />
-                  </svg>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-sm text-white font-semibold leading-tight truncate">
-                    {walletState.status === 'linked'
-                      ? 'Open Google Wallet Pass'
-                      : 'Add to Google Wallet'}
-                  </span>
-                  <span className="text-[11px] text-white/60 truncate">
-                    Offline access &amp; quick tile
-                  </span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleWalletClick}
-                className={`shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-high/90 text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${walletStatusColor}`}
-              >
-                {walletStatusLabel}
-              </button>
-            </div>
 
             {/* Secondary NFC Direct Interaction Node */}
             <button

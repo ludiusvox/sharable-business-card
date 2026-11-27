@@ -9,7 +9,6 @@ interface BottomNavProps {
 const NAV_ITEMS: { id: AppTab; label: string; icon: string }[] = [
   { id: 'share', label: 'Share', icon: 'qr_code_2' },
   { id: 'card', label: 'Card', icon: 'badge' },
-  { id: 'wallet', label: 'Wallet', icon: 'account_balance_wallet' },
 ];
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onSelectTab }) => {

@@ -32,7 +32,7 @@ export const CardDetailsTab: React.FC<CardDetailsTabProps> = ({
     setIsModified(true);
   };
 
-  const toggleRule = (key: 'includeCompanyInWallet' | 'quickShareVcard') => {
+  const toggleRule = (key: 'quickShareVcard') => {
     setDraftRules((prev) => ({ ...prev, [key]: !prev[key] }));
     setIsModified(true);
   };
@@ -146,7 +146,7 @@ export const CardDetailsTab: React.FC<CardDetailsTabProps> = ({
               Live Sync Policy
             </span>
             <p className="leading-relaxed">
-              Changes made here update your 3D Share Card, Android NFC Beam payload, vCard export, and Google Wallet Pass simultaneously.
+              Changes made here update your 3D Share Card, Android NFC Beam payload, and vCard export simultaneously.
             </p>
           </div>
         </div>
@@ -438,34 +438,6 @@ export const CardDetailsTab: React.FC<CardDetailsTabProps> = ({
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-semibold text-on-surface">
-                  Include Company Info in Wallet Pass
-                </span>
-                <span className="text-xs text-on-surface-variant">
-                  Inject company entity into Google Wallet credential metadata
-                </span>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={draftRules.includeCompanyInWallet}
-                onClick={() => toggleRule('includeCompanyInWallet')}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary ${
-                  draftRules.includeCompanyInWallet ? 'bg-primary-container' : 'bg-surface-variant'
-                }`}
-              >
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full shadow transition duration-200 mt-0.5 ${
-                    draftRules.includeCompanyInWallet
-                      ? 'translate-x-5 bg-on-primary'
-                      : 'translate-x-0.5 bg-outline-variant'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-on-surface">
                   Android Quick Share vCard Format
                 </span>
                 <span className="text-xs text-on-surface-variant">
@@ -504,12 +476,12 @@ export const CardDetailsTab: React.FC<CardDetailsTabProps> = ({
                   <span className="material-symbols-outlined text-[20px] animate-spin">
                     refresh
                   </span>
-                  <span>Compiling Pass Payload...</span>
+                  <span>Saving Changes...</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[20px]">cloud_sync</span>
-                  <span>Save &amp; Update Wallet Pass</span>
+                  <span className="material-symbols-outlined text-[20px]">save</span>
+                  <span>Save Digital Card Details</span>
                 </>
               )}
             </button>
@@ -520,7 +492,7 @@ export const CardDetailsTab: React.FC<CardDetailsTabProps> = ({
                 className="flex items-center justify-center gap-2 p-3 rounded-xl bg-surface-container text-on-surface text-xs"
               >
                 <span className="material-symbols-outlined text-primary text-[18px]">verified</span>
-                <span>Local profile synced. Wallet payload recompiled.</span>
+                <span>Local profile synced. Digital card updated.</span>
               </div>
             )}
           </div>

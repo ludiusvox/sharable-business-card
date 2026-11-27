@@ -6,24 +6,19 @@ import { NfcBroadcastView } from './components/NfcBroadcastView';
 import { ShareSheetModal } from './components/ShareSheetModal';
 import { ShareTab } from './components/ShareTab';
 import { TopBar } from './components/TopBar';
-import { WalletPassModal } from './components/WalletPassModal';
-import { WalletSyncTab } from './components/WalletSyncTab';
 import {
   createEmptyProfile,
   DEFAULT_RULES,
-  DEFAULT_WALLET_STATE,
 } from './data/defaults';
 import {
   AppTab,
   BroadcastRules,
   CardProfile,
   RedactableField,
-  WalletSyncState,
 } from './types/card';
 import {
   buildShareLink,
   copyText,
-  downloadVCard,
   shareVCard,
 } from './utils/vcard';
 
@@ -31,7 +26,6 @@ const STORAGE_KEYS = {
   setupComplete: 'sovereign_id_setup_complete_v2',
   profile: 'sovereign_id_profile_v2',
   rules: 'sovereign_id_rules_v2',
-  wallet: 'sovereign_id_wallet_v2',
 };
 
 function readStoredObject<T>(key: string, fallbackFactory: () => T): T {
@@ -66,12 +60,8 @@ export default function App() {
   const [rules, setRules] = useState<BroadcastRules>(() =>
     readStoredObject(STORAGE_KEYS.rules, () => DEFAULT_RULES)
   );
-  const [walletState, setWalletState] = useState<WalletSyncState>(() =>
-    readStoredObject(STORAGE_KEYS.wallet, () => DEFAULT_WALLET_STATE)
-  );
 
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [nfcBroadcastOpen, setNfcBroadcastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -93,14 +83,6 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.wallet, JSON.stringify(walletState));
-    } catch {
-      // Ignore storage quota errors
-    }
-  }, [walletState]);
-
-  useEffect(() => {
-    try {
       localStorage.setItem(STORAGE_KEYS.setupComplete, setupComplete ? 'true' : 'false');
     } catch {
       // Ignore storage quota errors
@@ -117,10 +99,6 @@ export default function App() {
 
   const handleCompleteBootSetup = (createdProfile: CardProfile) => {
     setProfile(createdProfile);
-    setRules((prev) => ({
-      ...prev,
-      includeCompanyInWallet: Boolean(createdProfile.company.trim()) || prev.includeCompanyInWallet,
-    }));
     setSetupComplete(true);
     setActiveTab('share');
     notify('Your digital business card is ready to share');
@@ -142,7 +120,7 @@ export default function App() {
   };
 
   const handleDownloadVCard = async () => {
-    const shared = await shareVCard(profile, rules.redactedFields, rules.includeCompanyInWallet);
+    const shared = await shareVCard(profile, rules.redactedFields, true);
     if (shared) {
       notify(`Shared ${profile.fullName || 'sovereign-id'} vCard via Nearby Share`);
     } else {
@@ -150,44 +128,10 @@ export default function App() {
     }
   };
 
-  const handleSyncWallet = useCallback(() => {
-    setWalletState({
-      status: 'syncing',
-      lastSyncedLabel: 'Compiling Google Wallet pass...',
-    });
-    setTimeout(() => {
-      setWalletState({
-        status: 'linked',
-        lastSyncedLabel: 'Synchronized just now',
-      });
-      notify('Pass synced to Google Wallet');
-    }, 900);
-  }, [notify]);
-
-  const handleRemoveFromWallet = () => {
-    setWalletState({
-      status: 'removed',
-      lastSyncedLabel: 'Removed from handset Wallet',
-    });
-    notify('Pass removed from Google Wallet');
-  };
-
   const handleSaveCardDetails = (nextProfile: CardProfile, nextRules: BroadcastRules) => {
     setProfile(nextProfile);
     setRules(nextRules);
-    if (nextRules.autoUpdateWallet && walletState.status === 'linked') {
-      setWalletState({
-        status: 'linked',
-        lastSyncedLabel: 'Auto-synced with updated card details',
-      });
-    }
-    notify('Card details saved & pass payload updated');
-  };
-
-  const handleToggleRule = (
-    key: 'autoUpdateWallet' | 'lockscreenShortcut' | 'nearbyAutoTrigger'
-  ) => {
-    setRules((prev) => ({ ...prev, [key]: !prev[key] }));
+    notify('Card details saved successfully');
   };
 
   const handleToggleRedact = (field: RedactableField) => {
@@ -223,9 +167,7 @@ export default function App() {
     const freshProfile = createEmptyProfile();
     setProfile(freshProfile);
     setRules(DEFAULT_RULES);
-    setWalletState(DEFAULT_WALLET_STATE);
     setShareSheetOpen(false);
-    setWalletModalOpen(false);
     setNfcBroadcastOpen(false);
     setSetupComplete(false);
     setActiveTab('share');
@@ -257,12 +199,9 @@ export default function App() {
           <ShareTab
             profile={profile}
             rules={rules}
-            walletState={walletState}
             onEditCard={() => setActiveTab('card')}
             onOpenShareSheet={handleOpenAndroidShare}
             onOpenNfcBeam={() => setNfcBroadcastOpen(true)}
-            onSyncWallet={handleSyncWallet}
-            onOpenWalletModal={() => setWalletModalOpen(true)}
             onCopyText={handleCopy}
             onDownloadVCard={handleDownloadVCard}
           />
@@ -273,19 +212,6 @@ export default function App() {
             profile={profile}
             rules={rules}
             onSave={handleSaveCardDetails}
-          />
-        )}
-
-        {activeTab === 'wallet' && (
-          <WalletSyncTab
-            profile={profile}
-            rules={rules}
-            walletState={walletState}
-            onToggleRule={handleToggleRule}
-            onSyncNow={handleSyncWallet}
-            onOpenWalletModal={() => setWalletModalOpen(true)}
-            onRemoveFromWallet={handleRemoveFromWallet}
-            onDownloadVCard={handleDownloadVCard}
           />
         )}
       </main>
@@ -301,14 +227,6 @@ export default function App() {
         onCopyLink={handleCopyShareLink}
       />
 
-      <WalletPassModal
-        isOpen={walletModalOpen}
-        profile={profile}
-        includeCompany={rules.includeCompanyInWallet}
-        onClose={() => setWalletModalOpen(false)}
-        onDownloadVCard={handleDownloadVCard}
-      />
-
       {nfcBroadcastOpen && (
         <NfcBroadcastView
           profile={profile}
@@ -317,9 +235,6 @@ export default function App() {
           onToggleRedact={handleToggleRedact}
           onCopyLink={handleCopyShareLink}
           onDownloadVCard={handleDownloadVCard}
-          onPushToWallet={() => {
-            handleSyncWallet();
-          }}
           onNotify={notify}
         />
       )}

@@ -13,7 +13,6 @@ interface TopBarProps {
 const TAB_TITLES: Record<AppTab, string> = {
   share: 'Preview And Share',
   card: 'Card Details',
-  wallet: 'Wallet Sync',
 };
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -87,17 +86,6 @@ export const TopBar: React.FC<TopBarProps> = ({
             }`}
           >
             Card Details
-          </button>
-          <button
-            type="button"
-            onClick={() => onSelectTab('wallet')}
-            className={`py-1 transition-colors whitespace-nowrap shrink-0 border-b-2 ${
-              activeTab === 'wallet'
-                ? 'text-primary border-primary font-semibold'
-                : 'text-on-surface-variant border-transparent hover:text-on-surface'
-            }`}
-          >
-            Wallet Sync
           </button>
           <button
             type="button"

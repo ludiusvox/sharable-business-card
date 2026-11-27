@@ -10,7 +10,6 @@ interface NfcBroadcastViewProps {
   onToggleRedact: (field: RedactableField) => void;
   onCopyLink: () => void;
   onDownloadVCard: () => void;
-  onPushToWallet: () => void;
   onNotify: (message: string) => void;
 }
 
@@ -21,7 +20,6 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
   onToggleRedact,
   onCopyLink,
   onDownloadVCard,
-  onPushToWallet,
   onNotify,
 }) => {
   const [beamStatus, setBeamStatus] = useState<'ready' | 'transmitting' | 'sent'>('ready');
@@ -69,7 +67,7 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
     }
 
     const shareLink = buildShareLink(profile);
-    const vcardText = buildVCardPayload(profile, rules.redactedFields, rules.includeCompanyInWallet);
+    const vcardText = buildVCardPayload(profile, rules.redactedFields, true);
     const summary = `${profile.fullName} — ${profile.title}${
       profile.company ? ` at ${profile.company}` : ''
     }\n${shareLink}`;
@@ -90,7 +88,7 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
 
   const handleAppShare = async (app: string) => {
     const shareLink = buildShareLink(profile);
-    const vcardText = buildVCardPayload(profile, rules.redactedFields, rules.includeCompanyInWallet);
+    const vcardText = buildVCardPayload(profile, rules.redactedFields, true);
     const summary = `${profile.fullName} — ${profile.title}${
       profile.company ? ` at ${profile.company}` : ''
     }\n${shareLink}`;
@@ -306,10 +304,10 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-semibold text-on-surface truncate">
-                  {profile.fullName.trim()} - Cardholder Pass
+                  {profile.fullName.trim()} - Digital Business Card
                 </span>
                 <span className="text-xs text-on-surface-variant truncate">
-                  PassCard vCard &amp; Google Wallet Pass
+                  PassCard vCard &amp; NFC Beam
                 </span>
               </div>
             </div>
@@ -326,19 +324,6 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
 
           {/* Quick Action System Chips */}
           <div className="flex items-center gap-2 px-5 overflow-x-auto py-2 no-scrollbar">
-            <button
-              type="button"
-              onClick={onPushToWallet}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-high hover:bg-surface-bright rounded-full shrink-0 active:scale-95 transition-all text-on-surface"
-            >
-              <span className="material-symbols-outlined text-[18px] text-secondary">
-                account_balance_wallet
-              </span>
-              <span className="text-xs font-semibold whitespace-nowrap">
-                Sync to Google Wallet
-              </span>
-            </button>
-
             <button
               type="button"
               onClick={triggerBeam}

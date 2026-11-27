@@ -1,4 +1,4 @@
-export type AppTab = 'share' | 'card' | 'wallet';
+export type AppTab = 'share' | 'card';
 
 export type RedactableField = 'phone' | 'email' | 'officeAddress' | 'taxId';
 
@@ -21,17 +21,6 @@ export interface CardProfile {
 }
 
 export interface BroadcastRules {
-  includeCompanyInWallet: boolean;
   quickShareVcard: boolean;
-  autoUpdateWallet: boolean;
-  lockscreenShortcut: boolean;
-  nearbyAutoTrigger: boolean;
   redactedFields: RedactableField[];
-}
-
-export type WalletStatus = 'ready' | 'syncing' | 'linked' | 'removed';
-
-export interface WalletSyncState {
-  status: WalletStatus;
-  lastSyncedLabel: string;
 }

@@ -1,4 +1,4 @@
-import { BroadcastRules, CardProfile, WalletSyncState } from '../types/card';
+import { BroadcastRules, CardProfile } from '../types/card';
 
 function generateCardIdentifiers() {
   const num4 = Math.floor(1000 + Math.random() * 9000);
@@ -32,17 +32,8 @@ export function createEmptyProfile(): CardProfile {
 }
 
 export const DEFAULT_RULES: BroadcastRules = {
-  includeCompanyInWallet: true,
   quickShareVcard: true,
-  autoUpdateWallet: true,
-  lockscreenShortcut: true,
-  nearbyAutoTrigger: true,
   redactedFields: [],
-};
-
-export const DEFAULT_WALLET_STATE: WalletSyncState = {
-  status: 'ready',
-  lastSyncedLabel: 'Ready to sync with Google Wallet',
 };
 
 export function getInitials(name: string, fallback = 'ID'): string {
