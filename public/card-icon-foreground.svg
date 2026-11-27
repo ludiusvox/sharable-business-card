@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="100%" height="100%">
+  <defs>
+    <!-- Background Card Gradient -->
+    <linearGradient id="cardFgBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+
+    <!-- Metallic Edge & Glow -->
+    <linearGradient id="borderFgGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#c084fc" stop-opacity="0.7" />
+    </linearGradient>
+
+    <!-- Chip Gradient -->
+    <linearGradient id="chipFgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <!-- NFC Wave Gradient -->
+    <linearGradient id="nfcFgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Centered Smart Card inside 66dp Safe Area (108dp total adaptive viewport) -->
+  <g transform="translate(18, 26)">
+    <!-- Card Base Shadow -->
+    <rect x="2" y="3" width="68" height="46" rx="6" fill="#000000" opacity="0.4" />
+
+    <!-- Card Body -->
+    <rect x="0" y="0" width="72" height="48" rx="6" fill="url(#cardFgBg)" stroke="url(#borderFgGlow)" stroke-width="1.2" />
+
+    <!-- Smart EMV Chip (Left) -->
+    <g transform="translate(7, 8)">
+      <rect x="0" y="0" width="11" height="8" rx="1.5" fill="url(#chipFgGrad)" />
+      <line x1="0" y1="4" x2="11" y2="4" stroke="#78350f" stroke-width="0.5" opacity="0.6" />
+      <line x1="5.5" y1="0" x2="5.5" y2="8" stroke="#78350f" stroke-width="0.5" opacity="0.6" />
+    </g>
+
+    <!-- NFC Waves (Right) -->
+    <g transform="translate(56, 7)" stroke="url(#nfcFgGrad)" stroke-width="1.2" fill="none" stroke-linecap="round">
+      <path d="M 0 8 A 8 8 0 0 1 8 0" opacity="0.5" />
+      <path d="M 0 5 A 5 5 0 0 1 5 0" opacity="0.8" />
+      <circle cx="1" cy="8" r="0.8" fill="#38bdf8" stroke="none" />
+    </g>
+
+    <!-- Verified Badge -->
+    <g transform="translate(7, 22)">
+      <circle cx="4" cy="4" r="3.5" fill="#34d399" />
+      <path d="M 2.5 4 L 3.5 5.2 L 5.5 2.8" stroke="#064e3b" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+      <text x="10" y="6.2" fill="#f8fafc" font-family="sans-serif" font-weight="800" font-size="5.5" letter-spacing="0.3">SOVEREIGN</text>
+    </g>
+
+    <!-- Identity Lines -->
+    <rect x="7" y="32" width="36" height="2.5" rx="1.2" fill="#e2e8f0" />
+    <rect x="7" y="36" width="22" height="2" rx="1" fill="#818cf8" />
+
+    <!-- Serial footer line -->
+    <line x1="7" y1="41" x2="65" y2="41" stroke="#334155" stroke-width="0.6" stroke-dasharray="1.5 1.5" />
+    <text x="7" y="45" fill="#64748b" font-family="monospace" font-size="3" font-weight="700">SOV-PASS-ID</text>
+  </g>
+</svg>

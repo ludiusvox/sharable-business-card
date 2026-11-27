@@ -40,11 +40,7 @@ export const ShareTab: React.FC<ShareTabProps> = ({
   };
 
   const handleWalletClick = () => {
-    if (walletState.status === 'linked') {
-      onOpenWalletModal();
-    } else {
-      onSyncWallet();
-    }
+    onOpenWalletModal();
   };
 
   const walletStatusLabel =
