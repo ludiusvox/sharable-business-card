@@ -4,6 +4,7 @@ import { getInitials } from '../data/defaults';
 import { CardProfile } from '../types/card';
 import { downloadGoogleWalletPassJson, openGoogleWalletPass } from '../utils/googleWallet';
 import { buildVCardPayload } from '../utils/vcard';
+import { downloadPassScreenshot } from '../utils/image';
 
 interface WalletPassModalProps {
   isOpen: boolean;
@@ -46,6 +47,17 @@ export const WalletPassModal: React.FC<WalletPassModalProps> = ({
 
   const handleDownloadPassJson = () => {
     downloadGoogleWalletPassJson(profile, {
+      includeCompanyInWallet: includeCompany,
+      quickShareVcard: true,
+      autoUpdateWallet: true,
+      lockscreenShortcut: true,
+      nearbyAutoTrigger: true,
+      redactedFields: [],
+    });
+  };
+
+  const handleSavePassPhoto = () => {
+    downloadPassScreenshot(profile, {
       includeCompanyInWallet: includeCompany,
       quickShareVcard: true,
       autoUpdateWallet: true,
@@ -197,23 +209,32 @@ export const WalletPassModal: React.FC<WalletPassModalProps> = ({
           </div>
 
           {/* Action Row */}
-          <div className="w-full flex items-center gap-2">
+          <div className="w-full grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={onDownloadVCard}
-              className="flex-1 h-10 rounded-xl bg-primary-container hover:bg-inverse-primary text-on-primary-container text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="h-10 rounded-xl bg-primary-container hover:bg-inverse-primary text-on-primary-container text-xs font-semibold flex items-center justify-center gap-1 transition-colors px-1"
             >
               <span className="material-symbols-outlined text-[16px]">download</span>
-              <span>Save .vcf</span>
+              <span>.vcf</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleSavePassPhoto}
+              className="h-10 rounded-xl bg-tertiary-container hover:bg-tertiary text-on-tertiary-container text-xs font-semibold flex items-center justify-center gap-1 transition-colors px-1"
+              title="Save clean card/pass screenshot image to photos"
+            >
+              <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+              <span>Pass Photo</span>
             </button>
             <button
               type="button"
               onClick={handleDownloadPassJson}
-              className="flex-1 h-10 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+              className="h-10 rounded-xl bg-surface-container-high hover:bg-surface-bright text-on-surface text-xs font-semibold flex items-center justify-center gap-1 transition-colors px-1"
               title="Download Google Wallet Pass API JSON payload"
             >
               <span className="material-symbols-outlined text-[16px]">code</span>
-              <span>Export JSON</span>
+              <span>JSON</span>
             </button>
           </div>
         </div>
