@@ -33,6 +33,17 @@ export interface GoogleWalletPassPayload {
 const DEFAULT_ISSUER_ID = '3388000000022149182';
 
 /**
+ * Checks if a live signed Google Wallet JWT or custom save URL is configured in env variables.
+ */
+export function hasSignedGoogleWalletJwt(): boolean {
+  return Boolean(
+    import.meta.env.VITE_GOOGLE_WALLET_JWT ||
+      import.meta.env.VITE_GOOGLE_WALLET_TEST_JWT ||
+      import.meta.env.VITE_GOOGLE_WALLET_SAVE_URL
+  );
+}
+
+/**
  * Compiles a card profile into a formal Google Wallet Generic Pass JSON structure.
  */
 export function buildGoogleWalletPassPayload(
@@ -156,26 +167,6 @@ export function buildGoogleWalletPassPayload(
 }
 
 /**
- * Builds the direct "Save to Google Wallet" link or web intent.
- */
-export function buildGoogleWalletSaveUrl(
-  profile: CardProfile,
-  rules: BroadcastRules
-): string {
-  const jwt = import.meta.env.VITE_GOOGLE_WALLET_TEST_JWT;
-  if (jwt) {
-    return `https://pay.google.com/gp/v/save/${jwt}`;
-  }
-
-  // Fallback web deep link targeting Google Wallet pass save web service or pass viewer
-  const passPayload = buildGoogleWalletPassPayload(profile, rules);
-  const jsonStr = JSON.stringify(passPayload);
-  const encoded = encodeURIComponent(jsonStr);
-
-  return `https://wallet.google.com/pay/v/save?pass=${encoded}`;
-}
-
-/**
  * Downloads the full Google Wallet Generic Pass JSON object file for deployment / API console test.
  */
 export function downloadGoogleWalletPassJson(
@@ -200,17 +191,30 @@ export function downloadGoogleWalletPassJson(
 }
 
 /**
- * Triggers adding or syncing pass into Google Wallet.
- * Handles web, mobile deep-linking, and Capacitor native launch.
+ * Triggers adding or syncing pass into Google Wallet safely without 404 errors.
  */
 export async function openGoogleWalletPass(
   profile: CardProfile,
-  rules: BroadcastRules
-): Promise<void> {
-  const url = buildGoogleWalletSaveUrl(profile, rules);
+  rules: BroadcastRules,
+  onNotify?: (msg: string) => void
+): Promise<{ success: boolean; mode: 'jwt_redirect' | 'download_json' }> {
+  const jwt =
+    import.meta.env.VITE_GOOGLE_WALLET_JWT || import.meta.env.VITE_GOOGLE_WALLET_TEST_JWT;
+  const saveUrl = import.meta.env.VITE_GOOGLE_WALLET_SAVE_URL;
 
-  // If Capacitor is present natively on device, use window.open or system location
-  if (typeof window !== 'undefined') {
-    window.open(url, '_blank', 'noopener,noreferrer');
+  if (saveUrl || jwt) {
+    const targetUrl = saveUrl || `https://pay.google.com/gp/v/save/${jwt}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    if (onNotify) onNotify('Opening Google Wallet save gateway...');
+    return { success: true, mode: 'jwt_redirect' };
   }
+
+  // If no signed JWT is configured in environment, export the pass JSON payload to prevent 404 error
+  downloadGoogleWalletPassJson(profile, rules);
+  if (onNotify) {
+    onNotify(
+      'Exported Google Wallet Pass JSON! Scan the pass QR code or import JSON into Google Pay & Wallet Console.'
+    );
+  }
+  return { success: true, mode: 'download_json' };
 }
