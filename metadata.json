@@ -1,0 +1,6 @@
+{
+  "name": "Sovereign ID",
+  "description": "Single-card digital business identity platform with 3D card preview, company setup, Android NFC Beam sharing, vCard export, and Google Wallet pass sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
