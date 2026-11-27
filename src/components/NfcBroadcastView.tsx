@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { getInitials } from '../data/defaults';
 import { BroadcastRules, CardProfile, RedactableField } from '../types/card';
-import { buildShareLink, buildVCardPayload } from '../utils/vcard';
+import { buildShareLink, buildVCardPayload, shareVCard } from '../utils/vcard';
 
 interface NfcBroadcastViewProps {
   profile: CardProfile;
@@ -94,19 +94,10 @@ export const NfcBroadcastView: React.FC<NfcBroadcastViewProps> = ({
     }\n${shareLink}`;
 
     if (app === 'System') {
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: `${profile.fullName} — Digital Business Card`,
-            text: summary,
-            url: shareLink,
-          });
-          return;
-        } catch {
-          // Fall back to copying link
-        }
+      const ok = await shareVCard(profile, rules.redactedFields, true);
+      if (!ok) {
+        onCopyLink();
       }
-      onCopyLink();
       return;
     }
 

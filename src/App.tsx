@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { useCallback, useEffect, useState } from 'react';
 import { BootSetupScreen } from './components/BootSetupScreen';
 import { BottomNav } from './components/BottomNav';
@@ -147,6 +148,10 @@ export default function App() {
   };
 
   const handleOpenAndroidShare = async () => {
+    if (Capacitor.isNativePlatform()) {
+      await shareVCard(profile, rules.redactedFields, true);
+      return;
+    }
     const shareUrl = buildShareLink(profile);
     if (navigator.share) {
       try {

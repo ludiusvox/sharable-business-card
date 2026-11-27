@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { Directory, Encoding, Filesystem } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { CardProfile, RedactableField } from '../types/card';
 
 export function isCompanyConfigured(profile: CardProfile): boolean {
@@ -65,21 +68,43 @@ export function buildVCardPayload(
   return lines.join('\r\n');
 }
 
-export function downloadVCard(
+export async function downloadVCard(
   profile: CardProfile,
   redactedFields: RedactableField[] = [],
   includeCompany = true
-): void {
+): Promise<void> {
   const vcard = buildVCardPayload(profile, redactedFields, includeCompany);
-  const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
   const safeName = (profile.fullName || 'sovereign-id')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+  const fileName = `${safeName || 'sovereign-id'}.vcf`;
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: vcard,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8,
+      });
+
+      await Share.share({
+        title: `${profile.fullName} — Digital Business Card vCard`,
+        text: `Digital business card vCard (.vcf) for ${profile.fullName}`,
+        files: [savedFile.uri],
+      });
+      return;
+    } catch (err) {
+      console.error('Error sharing/downloading vCard natively:', err);
+    }
+  }
+
+  const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = `${safeName || 'sovereign-id'}.vcf`;
+  anchor.download = fileName;
   document.body.appendChild(anchor);
   anchor.click();
   document.body.removeChild(anchor);
@@ -87,7 +112,7 @@ export function downloadVCard(
 }
 
 /**
- * Shares vCard (.vcf) file via Android Nearby Share / System Share sheet if supported.
+ * Shares vCard (.vcf) file via Android Quick Share / System Share sheet if supported.
  */
 export async function shareVCard(
   profile: CardProfile,
@@ -99,8 +124,34 @@ export async function shareVCard(
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
+  const fileName = `${safeName || 'sovereign-id'}.vcf`;
+
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: vcard,
+        directory: Directory.Cache,
+        encoding: Encoding.UTF8,
+      });
+
+      await Share.share({
+        title: `${profile.fullName} — Digital Business Card vCard`,
+        text: `Digital business card vCard (.vcf) for ${profile.fullName}`,
+        files: [savedFile.uri],
+      });
+      return true;
+    } catch (err) {
+      const errMsg = String(err);
+      if (errMsg.includes('canceled') || (err as Error)?.name === 'AbortError') {
+        return false;
+      }
+      console.error('Error sharing vCard natively:', err);
+    }
+  }
+
   const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
-  const file = new File([blob], `${safeName || 'sovereign-id'}.vcf`, { type: 'text/vcard' });
+  const file = new File([blob], fileName, { type: 'text/vcard' });
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
